@@ -1,0 +1,51 @@
+{
+    "name": "dicr/yii2-yandex-xml",
+    "type": "yii2-extension",
+    "license": "MIT",
+    "homepage": "https://gitlab.com/dicr/yii2-yandex-xml",
+    "description": "API XML-поиска Яндекс для Yii2",
+    "keywords": ["dicr", "yii2", "yandex", "xml"],
+    "support": {
+        "source": "https://gitlab.com/dicr/yii2-yandex-xml.git"
+    },
+    "authors": [
+        {
+            "name": "Igor Tarasov",
+            "email": "develop@dicr.org",
+            "homepage": "http://dicr.org",
+            "role": "developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "dicr\\yandex\\xml\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "dicr\\tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "rc",
+    "prefer-stable": true,
+    "require": {
+        "php": "~7.3",
+        "ext-intl": "*",
+        "ext-mbstring": "*",
+        "ext-simplexml": "*",
+        "yiisoft/yii2": "~2.0",
+        "dicr/yii2-helper": "~3.7",
+        "dicr/yii2-http": "~2.1",
+        "dicr/yii2-validate": "~2.1"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-master",
+        "phpunit/phpunit": "~9.4"
+    },
+    "repositories": [
+        {"type": "gitlab", "url": "https://gitlab.com/dicr/yii2-helper.git"},
+        {"type": "gitlab", "url": "https://gitlab.com/dicr/yii2-http.git"},
+        {"type": "gitlab", "url": "https://gitlab.com/dicr/yii2-validate.git"},
+        {"type": "composer", "url": "https://asset-packagist.org"}
+    ]
+}

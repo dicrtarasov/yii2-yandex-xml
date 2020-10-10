@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ @copyright Igor A Tarasov <develop@dicr.org>
+  ~ @version 09.10.20 20:26:04
+  -->
+<phpunit
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.4/phpunit.xsd"
+        bootstrap="tests/bootstrap.php"
+>
+    <testsuites>
+        <testsuite name="Dicr Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
