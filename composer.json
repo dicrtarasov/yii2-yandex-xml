@@ -26,7 +26,7 @@
             "dicr\\tests\\": "tests/"
         }
     },
-    "minimum-stability": "rc",
+    "minimum-stability": "RC",
     "prefer-stable": true,
     "require": {
         "php": "~7.3",
