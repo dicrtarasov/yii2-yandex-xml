@@ -1,7 +1,7 @@
 <?php
 /*
  * @copyright Igor A Tarasov <develop@dicr.org>
- * @version 10.10.20 09:07:55
+ * @version 23.10.20 16:46:54
  */
 
 declare(strict_types = 1);
@@ -108,64 +108,62 @@ class YandexXML extends Component implements YandexTypes
     {
         // получаем расписание из кэша
         $schedule = $this->cache->get(__METHOD__);
-        if (is_array($schedule)) {
-            return $schedule;
-        }
-
-        // логин и ключ проверяем в момент запроса, позволяя менять его динамически
-        if (empty($this->login)) {
-            throw new InvalidConfigException('login');
-        }
-
-        if (empty($this->apiKey)) {
-            throw new InvalidConfigException('apiKey');
-        }
-
-        $request = $this->httpClient->get('/search/xml', [
-            'action' => 'limits-info',
-            'user' => $this->login,
-            'key' => $this->apiKey
-        ]);
-
-        Yii::debug('Запрос: ' . $request->toString(), __METHOD__);
-        $response = $request->send();
-        Yii::debug('Ответ: ' . $response->toString(), __METHOD__);
-
-        if (! $response->isOk) {
-            throw new Exception('Ошибка запроса: ' . $response->statusCode);
-        }
-
-        $xml = simplexml_load_string($response->content);
-        if ($xml === false) {
-            throw new Exception('Ошибка XML: ' . $response->content);
-        }
-
-        if (isset($xml->response->error)) {
-            throw new Exception('Ошибка: ' . $xml->response->error);
-        }
-
-        $schedule = [];
-        $endTime = null;
-
-        foreach ($xml->response->limits->{'time-interval'} as $timeInterval) {
-            $from = (int)strtotime((string)$timeInterval['from']);
-            $to = (int)strtotime((string)$timeInterval['to']);
-
-            $schedule[] = [
-                'from' => $from,
-                'to' => $to,
-                'count' => (int)$timeInterval
-            ];
-
-            if ($endTime === null || $to > $endTime) {
-                $endTime = $to;
+        if (! is_array($schedule)) {
+            // логин и ключ проверяем в момент запроса, позволяя менять его динамически
+            if (empty($this->login)) {
+                throw new InvalidConfigException('login');
             }
-        }
 
-        // сохраняем в кеше до последнего времени расписания
-        if ($endTime !== null) {
-            $this->cache->set(__METHOD__, $schedule, $endTime - time() - 1);
-            Yii::debug('Расписание кэшировано до: ' . date('d.m.Y H:i:s', $endTime), __METHOD__);
+            if (empty($this->apiKey)) {
+                throw new InvalidConfigException('apiKey');
+            }
+
+            $request = $this->httpClient->get('/search/xml', [
+                'action' => 'limits-info',
+                'user' => $this->login,
+                'key' => $this->apiKey
+            ]);
+
+            Yii::debug('Запрос: ' . $request->toString(), __METHOD__);
+            $response = $request->send();
+            Yii::debug('Ответ: ' . $response->toString(), __METHOD__);
+
+            if (! $response->isOk) {
+                throw new Exception('HTTP-error: ' . $response->statusCode);
+            }
+
+            $xml = simplexml_load_string($response->content);
+            if ($xml === false) {
+                throw new Exception('Ошибка XML: ' . $response->content);
+            }
+
+            if (isset($xml->response->error)) {
+                throw new Exception('Ошибка: ' . $xml->response->error);
+            }
+
+            $schedule = [];
+            $endTime = null;
+
+            foreach ($xml->response->limits->{'time-interval'} as $timeInterval) {
+                $from = (int)strtotime((string)$timeInterval['from']);
+                $to = (int)strtotime((string)$timeInterval['to']);
+
+                $schedule[] = [
+                    'from' => $from,
+                    'to' => $to,
+                    'count' => (int)$timeInterval
+                ];
+
+                if ($endTime === null || $to > $endTime) {
+                    $endTime = $to;
+                }
+            }
+
+            // сохраняем в кеше до последнего времени расписания
+            if ($endTime !== null) {
+                $this->cache->set(__METHOD__, $schedule, $endTime - time() - 1);
+                Yii::debug('Расписание кэшировано до: ' . date('d.m.Y H:i:s', $endTime), __METHOD__);
+            }
         }
 
         return $schedule;
