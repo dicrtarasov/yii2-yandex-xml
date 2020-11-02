@@ -1,7 +1,7 @@
 <?php
 /*
  * @copyright Igor A Tarasov <develop@dicr.org>
- * @version 10.10.20 09:04:27
+ * @version 02.11.20 17:07:11
  */
 
 declare(strict_types = 1);
@@ -335,6 +335,7 @@ class YandexXMLRequest extends Model implements YandexTypes
     /**
      * Обрабатывает запрос
      *
+     * @return SimpleXMLElement
      * @throws Exception
      * @noinspection PhpUndefinedFieldInspection
      */
