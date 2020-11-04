@@ -33,3 +33,21 @@ foreach ($request->results as $res) {
     echo 'URL: ' . $res['url'] . "\n";
 }
 ```
+
+## Расписание лимитов
+
+```php
+use dicr\yandex\xml\YandexXML;
+
+/** @var YandexXML $yandexXml получаем компонент */
+$yandexXml = Yii::$app->get('yandexXml');
+
+echo "Расписание лимитов:\n";
+foreach ($yandexXml->limitsSchedule as $item) {
+    echo date('d.m.Y H:i', $item['from']) . ' - ' . date('H:i', $item['to']) . ': ' . $item['count'] . "\n";
+}
+
+echo 'Текущий лимит зап./час: ' . $yandexXml->hourLimit . "\n";
+echo 'Текущий лимит зап./сек: ' . $yandexXml->rpsLimit . "\n";
+echo 'Задержка между запросами, сек: ' . $yandexXml->requestDelay . "\n";
+```
