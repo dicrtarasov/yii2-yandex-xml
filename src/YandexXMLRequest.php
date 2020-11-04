@@ -1,7 +1,9 @@
 <?php
 /*
- * @copyright Igor A Tarasov <develop@dicr.org>
- * @version 02.11.20 17:07:11
+ * @copyright 2019-2020 Dicr http://dicr.org
+ * @author Igor A Tarasov <develop@dicr.org>
+ * @license proprietary
+ * @version 04.11.20 17:27:38
  */
 
 declare(strict_types = 1);
@@ -17,6 +19,7 @@ use yii\base\Model;
 use function array_keys;
 use function array_merge;
 use function ceil;
+use function count;
 use function implode;
 use function in_array;
 use function simplexml_load_string;
@@ -26,6 +29,8 @@ use function usleep;
 
 /**
  * Запрос результатов поиска.
+ *
+ * @property-read array $results результаты поиска
  *
  * @link https://yandex.ru/dev/xml/doc/dg/concepts/get-request.html
  */
@@ -281,8 +286,7 @@ class YandexXMLRequest extends Model implements YandexTypes
             'lr' => $this->region,
             'filter' => $this->filter,
             'maxpassages' => $this->snippets,
-            'page' => $this->page,
-
+            'page' => $this->page
         ];
 
         if ($this->sort !== null || $this->order !== null) {
@@ -318,12 +322,13 @@ class YandexXMLRequest extends Model implements YandexTypes
     private function lastRequestTimestamp(bool $update = false) : ?int
     {
         $timestamp = null;
+        $key = [__METHOD__, $this->_yandexXml->apiKey];
 
         if ($update) {
             $timestamp = time();
-            $this->_yandexXml->cache->set(__METHOD__, $timestamp);
+            $this->_yandexXml->cache->set($key, $timestamp);
         } else {
-            $ret = $this->_yandexXml->cache->get(__METHOD__);
+            $ret = $this->_yandexXml->cache->get($key);
             if ($ret !== false) {
                 $timestamp = (int)$ret;
             }
@@ -396,5 +401,41 @@ class YandexXMLRequest extends Model implements YandexTypes
         }
 
         return $xml;
+    }
+
+    /** @var array */
+    private $_results;
+
+    /**
+     * Результаты поиска.
+     *
+     * @return array
+     * @throws Exception
+     * @noinspection PhpUndefinedFieldInspection
+     */
+    public function getResults() : array
+    {
+        if ($this->_results === null) {
+            $xml = $this->send();
+
+            $this->_results = [];
+
+            foreach ($xml->response->results->grouping->group as $group) {
+                $doc = $group->doc[0];
+
+                $this->_results[] = [
+                    'pos' => count($this->_results) + 1,
+                    'title' => (string)$doc->title,
+                    'url' => (string)$doc->url,
+                    'passage' => (string)($doc->passages->passage[0] ?? ''),
+                    'lang' => (string)$doc->lang,
+                    'charset' => (string)$doc->charset,
+                    'size' => (int)$doc->size,
+                    'time' => (string)$doc->modtime
+                ];
+            }
+        }
+
+        return $this->_results;
     }
 }
