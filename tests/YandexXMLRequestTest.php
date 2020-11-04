@@ -1,7 +1,9 @@
 <?php
 /*
- * @copyright Igor A Tarasov <develop@dicr.org>
- * @version 10.10.20 09:07:41
+ * @copyright 2019-2020 Dicr http://dicr.org
+ * @author Igor A Tarasov <develop@dicr.org>
+ * @license proprietary
+ * @version 04.11.20 17:53:18
  */
 
 declare(strict_types = 1);
@@ -39,7 +41,7 @@ class YandexXMLRequestTest extends TestCase
     {
         $yandexXml = self::yandexXml();
 
-        $xmlRequest = $yandexXml->xmlRequest([
+        $xmlRequest = $yandexXml->request([
             'query' => 'dicr'
         ]);
 
@@ -48,6 +50,5 @@ class YandexXMLRequestTest extends TestCase
         self::assertGreaterThan(1, count($xml->response->results->grouping->group));
 
         echo $xml->response->results->grouping->{'found-docs-human'} . "\n";
-        //var_dump($xml);
     }
 }

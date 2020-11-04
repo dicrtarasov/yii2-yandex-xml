@@ -1,7 +1,9 @@
 <?php
 /*
- * @copyright Igor A Tarasov <develop@dicr.org>
- * @version 23.10.20 16:46:54
+ * @copyright 2019-2020 Dicr http://dicr.org
+ * @author Igor A Tarasov <develop@dicr.org>
+ * @license proprietary
+ * @version 04.11.20 17:48:58
  */
 
 declare(strict_types = 1);
@@ -222,7 +224,7 @@ class YandexXML extends Component implements YandexTypes
      * @return YandexXMLRequest
      * @throws InvalidConfigException
      */
-    public function xmlRequest(array $config = []) : YandexXMLRequest
+    public function request(array $config = []) : YandexXMLRequest
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Yii::createObject(

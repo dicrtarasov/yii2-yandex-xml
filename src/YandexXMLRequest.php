@@ -3,7 +3,7 @@
  * @copyright 2019-2020 Dicr http://dicr.org
  * @author Igor A Tarasov <develop@dicr.org>
  * @license proprietary
- * @version 04.11.20 17:27:38
+ * @version 04.11.20 17:51:29
  */
 
 declare(strict_types = 1);
@@ -30,7 +30,8 @@ use function usleep;
 /**
  * Запрос результатов поиска.
  *
- * @property-read array $results результаты поиска
+ * @property-read SimpleXMLElement $xml полные результаты поиска в XML
+ * @property-read array $results результаты поиска в массиве
  *
  * @link https://yandex.ru/dev/xml/doc/dg/concepts/get-request.html
  */
@@ -338,7 +339,27 @@ class YandexXMLRequest extends Model implements YandexTypes
     }
 
     /**
-     * Обрабатывает запрос
+     * Пауза между запросами.
+     */
+    private function pause() : void
+    {
+        // пауза перед запросом
+        $lastRequestTimestamp = $this->lastRequestTimestamp();
+        if ($lastRequestTimestamp !== null) {
+            $requiredDelay = $this->_yandexXml->requestDelay;
+            if ($requiredDelay > 0) {
+                $currentDelay = time() - $lastRequestTimestamp;
+                if ($currentDelay < $requiredDelay) {
+                    $delay = $requiredDelay - $currentDelay;
+                    Yii::debug('Пауза ' . $delay . ' секунд', __METHOD__);
+                    usleep((int)ceil($delay * 1000000));
+                }
+            }
+        }
+    }
+
+    /**
+     * Отправка запроса.
      *
      * @return SimpleXMLElement
      * @throws Exception
@@ -357,19 +378,7 @@ class YandexXMLRequest extends Model implements YandexTypes
         // получаем ответ из кеша
         $content = $this->_yandexXml->cache->get($cacheKey);
         if ($content === false) {
-            // пауза перед запросом
-            $lastRequestTimestamp = $this->lastRequestTimestamp();
-            if ($lastRequestTimestamp !== null) {
-                $requiredDelay = $this->_yandexXml->requestDelay;
-                if ($requiredDelay > 0) {
-                    $currentDelay = time() - $lastRequestTimestamp;
-                    if ($currentDelay < $requiredDelay) {
-                        $delay = $requiredDelay - $currentDelay;
-                        Yii::debug('Пауза ' . $delay . ' секунд', __METHOD__);
-                        usleep((int)ceil($delay * 1000000));
-                    }
-                }
-            }
+            $this->pause();
 
             // отправляем запрос
             Yii::debug('Запрос: ' . $request->toString(), __METHOD__);
@@ -396,11 +405,30 @@ class YandexXMLRequest extends Model implements YandexTypes
             throw new Exception('Ошибка XML: ' . $content);
         }
 
+        // проверяем ошибку в ответе
         if (isset($xml->response->error)) {
             throw new Exception('Ошибка: ' . $xml->response->error);
         }
 
         return $xml;
+    }
+
+    /** @var SimpleXMLElement */
+    private $_xml;
+
+    /**
+     * Полные результаты поиска в виде XML.
+     *
+     * @return SimpleXMLElement
+     * @throws Exception
+     */
+    public function getXml() : SimpleXMLElement
+    {
+        if ($this->_xml === null) {
+            $this->_xml = $this->send();
+        }
+
+        return $this->_xml;
     }
 
     /** @var array */
@@ -416,7 +444,7 @@ class YandexXMLRequest extends Model implements YandexTypes
     public function getResults() : array
     {
         if ($this->_results === null) {
-            $xml = $this->send();
+            $xml = $this->getXml();
 
             $this->_results = [];
 
@@ -425,8 +453,9 @@ class YandexXMLRequest extends Model implements YandexTypes
 
                 $this->_results[] = [
                     'pos' => count($this->_results) + 1,
-                    'title' => (string)$doc->title,
+                    'domain' => (string)$doc->domain,
                     'url' => (string)$doc->url,
+                    'title' => (string)$doc->title,
                     'passage' => (string)($doc->passages->passage[0] ?? ''),
                     'lang' => (string)$doc->lang,
                     'charset' => (string)$doc->charset,
