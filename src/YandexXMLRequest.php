@@ -3,7 +3,7 @@
  * @copyright 2019-2020 Dicr http://dicr.org
  * @author Igor A Tarasov <develop@dicr.org>
  * @license proprietary
- * @version 04.11.20 17:51:29
+ * @version 04.11.20 23:21:22
  */
 
 declare(strict_types = 1);
@@ -18,19 +18,16 @@ use yii\base\Model;
 
 use function array_keys;
 use function array_merge;
-use function ceil;
 use function count;
 use function implode;
 use function in_array;
 use function simplexml_load_string;
 use function sprintf;
-use function time;
-use function usleep;
 
 /**
  * Запрос результатов поиска.
  *
- * @property-read SimpleXMLElement $xml полные результаты поиска в XML
+ * @property-read SimpleXMLElement $data полные результаты поиска (сырые данные в XML)
  * @property-read array $results результаты поиска в массиве
  *
  * @link https://yandex.ru/dev/xml/doc/dg/concepts/get-request.html
@@ -315,50 +312,6 @@ class YandexXMLRequest extends Model implements YandexTypes
     }
 
     /**
-     * Получить/сохранить время последнего запроса.
-     *
-     * @param bool $update обновить текущее
-     * @return ?int
-     */
-    private function lastRequestTimestamp(bool $update = false) : ?int
-    {
-        $timestamp = null;
-        $key = [__METHOD__, $this->_yandexXml->apiKey];
-
-        if ($update) {
-            $timestamp = time();
-            $this->_yandexXml->cache->set($key, $timestamp);
-        } else {
-            $ret = $this->_yandexXml->cache->get($key);
-            if ($ret !== false) {
-                $timestamp = (int)$ret;
-            }
-        }
-
-        return $timestamp;
-    }
-
-    /**
-     * Пауза между запросами.
-     */
-    private function pause() : void
-    {
-        // пауза перед запросом
-        $lastRequestTimestamp = $this->lastRequestTimestamp();
-        if ($lastRequestTimestamp !== null) {
-            $requiredDelay = $this->_yandexXml->requestDelay;
-            if ($requiredDelay > 0) {
-                $currentDelay = time() - $lastRequestTimestamp;
-                if ($currentDelay < $requiredDelay) {
-                    $delay = $requiredDelay - $currentDelay;
-                    Yii::debug('Пауза ' . $delay . ' секунд', __METHOD__);
-                    usleep((int)ceil($delay * 1000000));
-                }
-            }
-        }
-    }
-
-    /**
      * Отправка запроса.
      *
      * @return SimpleXMLElement
@@ -378,7 +331,7 @@ class YandexXMLRequest extends Model implements YandexTypes
         // получаем ответ из кеша
         $content = $this->_yandexXml->cache->get($cacheKey);
         if ($content === false) {
-            $this->pause();
+            $this->_yandexXml->pause();
 
             // отправляем запрос
             Yii::debug('Запрос: ' . $request->toString(), __METHOD__);
@@ -388,9 +341,6 @@ class YandexXMLRequest extends Model implements YandexTypes
             if (! $response->isOk) {
                 throw new Exception('Ошибка HTTP: ' . $response->statusCode);
             }
-
-            // сохраняем время последнего запроса
-            $this->lastRequestTimestamp(true);
 
             // сохраняем ответ в кеше
             $content = $response->content;
@@ -414,7 +364,7 @@ class YandexXMLRequest extends Model implements YandexTypes
     }
 
     /** @var SimpleXMLElement */
-    private $_xml;
+    private $_data;
 
     /**
      * Полные результаты поиска в виде XML.
@@ -422,13 +372,13 @@ class YandexXMLRequest extends Model implements YandexTypes
      * @return SimpleXMLElement
      * @throws Exception
      */
-    public function getXml() : SimpleXMLElement
+    public function getData() : SimpleXMLElement
     {
-        if ($this->_xml === null) {
-            $this->_xml = $this->send();
+        if ($this->_data === null) {
+            $this->_data = $this->send();
         }
 
-        return $this->_xml;
+        return $this->_data;
     }
 
     /** @var array */
@@ -444,7 +394,7 @@ class YandexXMLRequest extends Model implements YandexTypes
     public function getResults() : array
     {
         if ($this->_results === null) {
-            $xml = $this->getXml();
+            $xml = $this->getData();
 
             $this->_results = [];
 

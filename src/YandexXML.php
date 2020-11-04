@@ -3,7 +3,7 @@
  * @copyright 2019-2020 Dicr http://dicr.org
  * @author Igor A Tarasov <develop@dicr.org>
  * @license proprietary
- * @version 04.11.20 17:48:58
+ * @version 04.11.20 23:23:28
  */
 
 declare(strict_types = 1);
@@ -18,11 +18,15 @@ use yii\caching\CacheInterface;
 use yii\di\Instance;
 use yii\httpclient\Client;
 
+use function array_filter;
 use function array_merge;
+use function ceil;
 use function date;
 use function is_array;
 use function simplexml_load_string;
 use function strtotime;
+use function time;
+use function usleep;
 
 /**
  * Компонент поиска Yandex XML API.
@@ -215,6 +219,50 @@ class YandexXML extends Component implements YandexTypes
         $rps = $this->rpsLimit;
 
         return $rps > 0 ? 1.0 / $rps : 0;
+    }
+
+    /**
+     * Получить/сохранить данные модуля.
+     *
+     * @param ?array $data
+     * @return array
+     */
+    private function moduleData(?array $data = null) : array
+    {
+        $key = [__METHOD__, $this->apiKey];
+        $currentData = Yii::$app->cache->get($key) ?: [];
+
+        if ($data !== null) {
+            $currentData = array_filter(array_merge($currentData, $data), static function ($val) : bool {
+                return $val !== null;
+            });
+
+            Yii::$app->cache->set($key, $currentData);
+        }
+
+        return $currentData;
+    }
+
+    /**
+     * Пауза между запросами.
+     */
+    public function pause() : void
+    {
+        $requestDelay = $this->requestDelay;
+        if ($requestDelay > 0) {
+            $moduleData = $this->moduleData();
+            $lastRequestTimestamp = (int)($moduleData['lastRequestTimestamp'] ?? 0);
+            if ($lastRequestTimestamp > 0) {
+                $pause = time() - $lastRequestTimestamp;
+                if ($pause < $requestDelay) {
+                    $pause = $requestDelay - $pause;
+                    Yii::debug('Пауза: ' . $pause . ' сек');
+                    usleep((int)ceil($pause * 1000000));
+                }
+            }
+        }
+
+        $this->moduleData(['lastRequestTimestamp' => time()]);
     }
 
     /**
