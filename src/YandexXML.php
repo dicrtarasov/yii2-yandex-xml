@@ -3,7 +3,7 @@
  * @copyright 2019-2020 Dicr http://dicr.org
  * @author Igor A Tarasov <develop@dicr.org>
  * @license proprietary
- * @version 04.11.20 23:23:28
+ * @version 04.11.20 23:26:11
  */
 
 declare(strict_types = 1);
@@ -256,7 +256,7 @@ class YandexXML extends Component implements YandexTypes
                 $pause = time() - $lastRequestTimestamp;
                 if ($pause < $requestDelay) {
                     $pause = $requestDelay - $pause;
-                    Yii::debug('Пауза: ' . $pause . ' сек');
+                    Yii::debug('Пауза: ' . $pause . ' сек', __METHOD__);
                     usleep((int)ceil($pause * 1000000));
                 }
             }
