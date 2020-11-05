@@ -3,7 +3,7 @@
  * @copyright 2019-2020 Dicr http://dicr.org
  * @author Igor A Tarasov <develop@dicr.org>
  * @license proprietary
- * @version 05.11.20 05:50:24
+ * @version 05.11.20 06:44:22
  */
 
 declare(strict_types = 1);
@@ -23,6 +23,7 @@ use function implode;
 use function in_array;
 use function simplexml_load_string;
 use function sprintf;
+use function strtotime;
 
 /**
  * Запрос результатов поиска.
@@ -401,6 +402,8 @@ class YandexXMLRequest extends Model implements YandexTypes
             foreach ($xml->response->results->grouping->group as $group) {
                 $doc = $group->doc[0];
 
+                $time = (string)$doc->modtime;
+
                 $this->_results[] = [
                     'pos' => count($this->_results) + 1,
                     'domain' => (string)$doc->domain,
@@ -410,7 +413,7 @@ class YandexXMLRequest extends Model implements YandexTypes
                     'lang' => (string)$doc->lang,
                     'charset' => (string)$doc->charset,
                     'size' => (int)$doc->size,
-                    'time' => (string)$doc->modtime
+                    'time' => $time ? strtotime($time) : null
                 ];
             }
         }
