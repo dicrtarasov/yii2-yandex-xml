@@ -3,7 +3,7 @@
  * @copyright 2019-2020 Dicr http://dicr.org
  * @author Igor A Tarasov <develop@dicr.org>
  * @license proprietary
- * @version 04.11.20 23:21:22
+ * @version 05.11.20 05:50:24
  */
 
 declare(strict_types = 1);
@@ -406,7 +406,7 @@ class YandexXMLRequest extends Model implements YandexTypes
                     'domain' => (string)$doc->domain,
                     'url' => (string)$doc->url,
                     'title' => (string)$doc->title,
-                    'passage' => (string)($doc->passages->passage[0] ?? ''),
+                    'snippet' => (string)($doc->passages->passage[0] ?? ''),
                     'lang' => (string)$doc->lang,
                     'charset' => (string)$doc->charset,
                     'size' => (int)$doc->size,
