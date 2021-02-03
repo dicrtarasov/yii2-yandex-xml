@@ -1,9 +1,9 @@
 <?php
 /*
- * @copyright 2019-2020 Dicr http://dicr.org
+ * @copyright 2019-2021 Dicr http://dicr.org
  * @author Igor A Tarasov <develop@dicr.org>
- * @license proprietary
- * @version 04.11.20 17:53:18
+ * @license Apache-2.0
+ * @version 03.02.21 21:17:47
  */
 
 declare(strict_types = 1);
@@ -28,14 +28,12 @@ class YandexXMLRequestTest extends TestCase
      */
     private static function yandexXml() : YandexXML
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Yii::$app->get('yandexXml');
     }
 
     /**
      *
      * @throws Exception
-     * @noinspection PhpUndefinedFieldInspection
      */
     public function testSend() : void
     {

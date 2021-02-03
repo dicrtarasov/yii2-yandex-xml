@@ -1,9 +1,9 @@
 <?php
 /*
- * @copyright 2019-2020 Dicr http://dicr.org
+ * @copyright 2019-2021 Dicr http://dicr.org
  * @author Igor A Tarasov <develop@dicr.org>
- * @license proprietary
- * @version 04.11.20 23:26:11
+ * @license Apache-2.0
+ * @version 03.02.21 21:17:28
  */
 
 declare(strict_types = 1);
@@ -73,7 +73,7 @@ class YandexXML extends Component implements YandexTypes
      * @inheritDoc
      * @throws InvalidConfigException
      */
-    public function init() : void
+    public function init(): void
     {
         parent::init();
 
@@ -89,7 +89,7 @@ class YandexXML extends Component implements YandexTypes
      * @return Client
      * @throws InvalidConfigException
      */
-    public function getHttpClient() : Client
+    public function getHttpClient(): Client
     {
         if (! isset($this->_httpClient)) {
             $this->_httpClient = Yii::createObject(array_merge([
@@ -108,9 +108,8 @@ class YandexXML extends Component implements YandexTypes
      *
      * @return array
      * @throws Exception
-     * @noinspection PhpUndefinedFieldInspection
      */
-    public function getLimitsSchedule() : array
+    public function getLimitsSchedule(): array
     {
         // получаем расписание из кэша
         $schedule = $this->cache->get(__METHOD__);
@@ -181,7 +180,7 @@ class YandexXML extends Component implements YandexTypes
      * @return int
      * @throws Exception
      */
-    public function getHourLimit() : int
+    public function getHourLimit(): int
     {
         $schedule = $this->limitsSchedule;
         $time = time();
@@ -203,7 +202,7 @@ class YandexXML extends Component implements YandexTypes
      * @link https://yandex.ru/dev/xml/doc/dg/concepts/rps-limits.html
      * @return float
      */
-    public function getRpsLimit() : float
+    public function getRpsLimit(): float
     {
         // если текущий сервер не .ru, то ограничений в секунду нет
         return $this->server === YandexTypes::SERVER_RU ? $this->hourLimit / 2000 : 0;
@@ -214,7 +213,7 @@ class YandexXML extends Component implements YandexTypes
      *
      * @return float задержка в секундах
      */
-    public function getRequestDelay() : float
+    public function getRequestDelay(): float
     {
         $rps = $this->rpsLimit;
 
@@ -227,15 +226,16 @@ class YandexXML extends Component implements YandexTypes
      * @param ?array $data
      * @return array
      */
-    private function moduleData(?array $data = null) : array
+    private function moduleData(?array $data = null): array
     {
         $key = [__METHOD__, $this->apiKey];
         $currentData = Yii::$app->cache->get($key) ?: [];
 
         if ($data !== null) {
-            $currentData = array_filter(array_merge($currentData, $data), static function ($val) : bool {
-                return $val !== null;
-            });
+            $currentData = array_filter(
+                array_merge($currentData, $data),
+                static fn($val): bool => $val !== null
+            );
 
             Yii::$app->cache->set($key, $currentData);
         }
@@ -246,7 +246,7 @@ class YandexXML extends Component implements YandexTypes
     /**
      * Пауза между запросами.
      */
-    public function pause() : void
+    public function pause(): void
     {
         $requestDelay = $this->requestDelay;
         if ($requestDelay > 0) {
@@ -272,7 +272,7 @@ class YandexXML extends Component implements YandexTypes
      * @return YandexXMLRequest
      * @throws InvalidConfigException
      */
-    public function request(array $config = []) : YandexXMLRequest
+    public function request(array $config = []): YandexXMLRequest
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Yii::createObject(

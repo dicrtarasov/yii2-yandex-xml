@@ -1,7 +1,9 @@
 <?php
 /*
- * @copyright Igor A Tarasov <develop@dicr.org>
- * @version 10.10.20 08:36:02
+ * @copyright 2019-2021 Dicr http://dicr.org
+ * @author Igor A Tarasov <develop@dicr.org>
+ * @license Apache-2.0
+ * @version 03.02.21 21:18:17
  */
 
 declare(strict_types = 1);
@@ -24,13 +26,13 @@ class YandexXMLTest extends TestCase
      */
     private static function yandexXml() : YandexXML
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Yii::$app->get('yandexXml');
     }
 
     /**
      * @throws Exception
      * @noinspection PhpMethodMayBeStaticInspection
+     * @noinspection PhpUnitMissingTargetForTestInspection
      */
     public function testLimits() : void
     {

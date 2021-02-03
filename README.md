@@ -5,11 +5,13 @@
 ## Настройка компонента
 
 ```php
-'components' => [
-    'yandexXml' => [
-        'class' => dicr\yandex\xml\YandexXML::class,
-        'login' => 'ваш_логин',
-        'apiKey' => 'ваш_ключ_api'
+$config = [
+    'components' => [
+        'yandexXml' => [
+            'class' => dicr\yandex\xml\YandexXML::class,
+            'login' => 'ваш_логин',
+            'apiKey' => 'ваш_ключ_api'
+        ]
     ]
 ];
 ```
